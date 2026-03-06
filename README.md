@@ -1,8 +1,8 @@
-# Fishbone-QA-911
-ArcGIS Pro geoprocessing tool for validating civic address points against road segment address ranges - built for NG911 dataset QA.
+# Fishbone QA 911
+ArcGIS Pro geoprocessing tool for validating civic address points against road segment address ranges - built for NG911 dataset QAQC.
 
 ## What It Does
-In a 911 address database, every civic address point should fall within the address range of its corresponding road segment. Fishbone-QA-911 automatically checks every civic point against its road's address ranges, flags mismatches, and visualizes the results as a fishbone diagram directly in ArcGIS Pro.
+In a 911 address database, every civic address point should fall within the address range of its corresponding road segment. Fishbone QA 911 automatically checks every civic point against its road's address ranges, flags mismatches, and visualizes the results as a fishbone diagram directly in ArcGIS Pro.
 
 **Matched points** get a line drawn from the civic point to its road segment - when you zoom out these look like fish bones branching off the road, making it immediately obvious where addresses sit relative to their street.
 
