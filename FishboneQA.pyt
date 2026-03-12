@@ -373,12 +373,31 @@ class FishboneQATool:
                 if status in ("OutOfRange", "NoData"):
                     oor_cur.insertRow([civ_shp, civ_oid, civ_street, civ_num, status])
 
-        messages.addMessage("OutOfRange points written.")
         messages.addMessage("=" * 50)
         messages.addMessage("Fishbone QA complete. Outputs written to:")
         messages.addMessage(f"  Civic Result   → {civic_result}")
         messages.addMessage(f"  Fishbone Lines → {output_lines}")
         messages.addMessage(f"  Out of Range   → {output_oor}")
         messages.addMessage("=" * 50)
+
+        # ------------------------------------------------------------------
+        # Add outputs to active map
+        # ------------------------------------------------------------------
+        try:
+            aprx       = arcpy.mp.ArcGISProject("CURRENT")
+            active_map = aprx.activeMap
+            if active_map is not None:
+                active_map.addDataFromPath(civic_result)
+                active_map.addDataFromPath(output_lines)
+                active_map.addDataFromPath(output_oor)
+                messages.addMessage("Outputs added to active map.")
+            else:
+                messages.addWarningMessage(
+                    "No active map found. Add outputs manually from the output GDB."
+                )
+        except Exception as e:
+            messages.addWarningMessage(
+                f"Could not add layers to map: {e}. Add outputs manually from the output GDB."
+            )
 
         return
