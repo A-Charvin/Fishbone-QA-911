@@ -12,11 +12,10 @@ class FishboneQATool:
     def __init__(self):
         self.label = "Civic to Road Fishbone QA"
         self.description = (
-            "Matches civic address points to road segments with comprehensive validation:\n"
+            "Matches civic address points to road segments with parity validation:\n"
             "- Address range validation (out of range detection)\n"
             "- Address parity validation (odd/even consistency)\n"
-            "- Road range parity validation\n"
-            "Outputs fishbone lines for matched points and separate layers for unmatched/problematic points."
+            "Outputs fishbone lines for matched points and separate layers for unmatched points."
         )
         self.canRunInBackground = False
 
@@ -230,50 +229,6 @@ class FishboneQATool:
         else:
             return ('MISMATCH', f'{addr_parity} address in {range_parity}-only range')
 
-    @staticmethod
-    def validate_address_range_order(from_addr, to_addr):
-        """
-        Check if address range is in logical order.
-        Returns: ('VALID', None) or ('WARNING', warning_message)
-        """
-        if from_addr is None or to_addr is None:
-            return ('UNKNOWN', 'Missing range values')
-        
-        # Ranges can go either direction, but we flag unusual patterns
-        if from_addr == to_addr:
-            return ('WARNING', 'From and To addresses are identical')
-        
-        # Check for very large gaps (might indicate data error)
-        gap = abs(to_addr - from_addr)
-        if gap > 10000:
-            return ('WARNING', f'Unusually large range gap: {int(gap)}')
-        
-        return ('VALID', None)
-
-    @staticmethod
-    def validate_range_parity_consistency(from_addr, to_addr):
-        """
-        Validate that a range follows proper odd/even patterns.
-        Returns: ('VALID', None), ('WARNING', warning_msg), or ('INVALID', error_msg)
-        """
-        if from_addr is None or to_addr is None:
-            return ('UNKNOWN', 'Missing range values')
-        
-        try:
-            from_int = int(from_addr)
-            to_int = int(to_addr)
-        except:
-            return ('UNKNOWN', 'Non-integer range values')
-        
-        from_parity = 'EVEN' if from_int % 2 == 0 else 'ODD'
-        to_parity = 'EVEN' if to_int % 2 == 0 else 'ODD'
-        
-        # Best practice: ranges should be all-odd or all-even
-        if from_parity != to_parity:
-            return ('WARNING', f'Mixed parity range: {from_int} ({from_parity}) to {to_int} ({to_parity})')
-        
-        return ('VALID', None)
-
     # ------------------------------------------------------------------
     # Main execution
     # ------------------------------------------------------------------
@@ -295,7 +250,6 @@ class FishboneQATool:
         civic_result  = os.path.join(out_gdb, "Civic_QA_Result")
         output_lines  = os.path.join(out_gdb, "Fishbone_Lines")
         output_oor    = os.path.join(out_gdb, "Fishbone_OutOfRange")
-        road_qa       = os.path.join(out_gdb, "Road_QA_Issues")
 
         sr = arcpy.Describe(civic_fc).spatialReference
 
@@ -332,7 +286,6 @@ class FishboneQATool:
         
         road_lookup = {}
         road_detail_lookup = {}
-        road_qa_issues = []
 
         with arcpy.da.SearchCursor(road_fc, road_fields) as cur:
             for row in cur:
@@ -354,53 +307,6 @@ class FishboneQATool:
                 
                 shp = row[6]
                 
-                # Validate range order
-                if fL is not None and tL is not None:
-                    status, msg = self.validate_address_range_order(fL, tL)
-                    if status == 'WARNING':
-                        road_qa_issues.append({
-                            'oid': oid,
-                            'name': name,
-                            'issue': f'Left range: {msg}',
-                            'fL': fL, 'tL': tL, 'fR': fR, 'tR': tR,
-                            'shape': shp
-                        })
-                    
-                    # Validate parity consistency
-                    if enable_parity_check:
-                        status, msg = self.validate_range_parity_consistency(fL, tL)
-                        if status == 'WARNING':
-                            road_qa_issues.append({
-                                'oid': oid,
-                                'name': name,
-                                'issue': f'Left range parity: {msg}',
-                                'fL': fL, 'tL': tL, 'fR': fR, 'tR': tR,
-                                'shape': shp
-                            })
-                
-                if fR is not None and tR is not None:
-                    status, msg = self.validate_address_range_order(fR, tR)
-                    if status == 'WARNING':
-                        road_qa_issues.append({
-                            'oid': oid,
-                            'name': name,
-                            'issue': f'Right range: {msg}',
-                            'fL': fL, 'tL': tL, 'fR': fR, 'tR': tR,
-                            'shape': shp
-                        })
-                    
-                    # Validate parity consistency
-                    if enable_parity_check:
-                        status, msg = self.validate_range_parity_consistency(fR, tR)
-                        if status == 'WARNING':
-                            road_qa_issues.append({
-                                'oid': oid,
-                                'name': name,
-                                'issue': f'Right range parity: {msg}',
-                                'fL': fL, 'tL': tL, 'fR': fR, 'tR': tR,
-                                'shape': shp
-                            })
-                
                 # Build lookup key
                 lookup_key = name.upper().strip() if name else None
                 
@@ -416,8 +322,6 @@ class FishboneQATool:
                 }
 
         messages.addMessage(f"Road lookup built: {len(road_lookup)} unique street names.")
-        if road_qa_issues:
-            messages.addMessage(f"Found {len(road_qa_issues)} potential road range issues.")
 
         # ------------------------------------------------------------------
         # Matching loop
@@ -653,33 +557,6 @@ class FishboneQATool:
             arcpy.AddField_management(output_oor, fname, ftype, **kwargs)
 
         # ------------------------------------------------------------------
-        # Create Road_QA_Issues (if needed)
-        # ------------------------------------------------------------------
-        if road_qa_issues:
-            messages.addMessage("Creating Road_QA_Issues layer...")
-            if arcpy.Exists(road_qa):
-                arcpy.Delete_management(road_qa)
-            
-            arcpy.CreateFeatureclass_management(
-                out_path=os.path.dirname(road_qa),
-                out_name=os.path.basename(road_qa),
-                geometry_type="POLYLINE",
-                spatial_reference=sr
-            )
-            
-            for fname, ftype, flength in [
-                ("RoadOID",    "LONG",   None),
-                ("RoadName",   "TEXT",   100),
-                ("Issue",      "TEXT",   200),
-                ("FromLeft",   "DOUBLE", None),
-                ("ToLeft",     "DOUBLE", None),
-                ("FromRight",  "DOUBLE", None),
-                ("ToRight",    "DOUBLE", None),
-            ]:
-                kwargs = {"field_length": flength} if flength else {}
-                arcpy.AddField_management(road_qa, fname, ftype, **kwargs)
-
-        # ------------------------------------------------------------------
         # Pass 1 - Fishbone lines
         # ------------------------------------------------------------------
         messages.addMessage("Drawing fishbone lines...")
@@ -800,27 +677,6 @@ class FishboneQATool:
                     
                     oor_cur.insertRow(oor_row)
 
-        # ------------------------------------------------------------------
-        # Pass 3 - Road QA Issues
-        # ------------------------------------------------------------------
-        if road_qa_issues:
-            messages.addMessage("Writing Road QA Issues...")
-            road_qa_fields = ["SHAPE@", "RoadOID", "RoadName", "Issue", 
-                            "FromLeft", "ToLeft", "FromRight", "ToRight"]
-            
-            with arcpy.da.InsertCursor(road_qa, road_qa_fields) as qa_cur:
-                for issue in road_qa_issues:
-                    qa_cur.insertRow([
-                        issue['shape'],
-                        issue['oid'],
-                        issue['name'],
-                        issue['issue'],
-                        issue['fL'],
-                        issue['tL'],
-                        issue['fR'],
-                        issue['tR']
-                    ])
-
         messages.addMessage("=" * 60)
         messages.addMessage("FISHBONE QA COMPLETE")
         messages.addMessage("=" * 60)
@@ -828,8 +684,6 @@ class FishboneQATool:
         messages.addMessage(f"  Civic Result   → {civic_result}")
         messages.addMessage(f"  Fishbone Lines → {output_lines}")
         messages.addMessage(f"  Out of Range   → {output_oor}")
-        if road_qa_issues:
-            messages.addMessage(f"  Road QA Issues → {road_qa}")
         messages.addMessage("=" * 60)
 
         # ------------------------------------------------------------------
@@ -842,8 +696,6 @@ class FishboneQATool:
                 active_map.addDataFromPath(civic_result)
                 active_map.addDataFromPath(output_lines)
                 active_map.addDataFromPath(output_oor)
-                if road_qa_issues:
-                    active_map.addDataFromPath(road_qa)
                 messages.addMessage("Outputs added to active map.")
             else:
                 messages.addWarningMessage(
