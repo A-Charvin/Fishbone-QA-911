@@ -1,4 +1,4 @@
-# Toolbox Reference - Fishbone-QA-911
+# Toolbox Reference - Fishbone-QA-911 Enhanced
 
 ## Overview
 
@@ -141,25 +141,6 @@ All outputs are written to the specified output geodatabase. Existing outputs ar
 | `RangeStatus` | Text (30) | `OutOfRange` or `NoData` |
 | `AddressParity` | Text (10) | Parity of address *(when parity validation enabled)* |
 
-### Road_QA_Issues (Polyline) - NEW
-
-This layer is only created when issues are detected in road segment ranges.
-
-| Field | Type | Description |
-|---|---|---|
-| `RoadOID` | Long | OBJECTID of the road segment |
-| `RoadName` | Text (100) | Road name |
-| `Issue` | Text (200) | Description of the problem |
-| `FromLeft` | Double | From address left side |
-| `ToLeft` | Double | To address left side |
-| `FromRight` | Double | From address right side |
-| `ToRight` | Double | To address right side |
-
-**Common Issues Detected:**
-- "Left range: From and To addresses are identical"
-- "Right range: Unusually large range gap: 10250"
-- "Left range parity: Mixed parity range: 100 (EVEN) to 199 (ODD)"
-
 ## Enhanced Statistics Output
 
 The tool reports comprehensive statistics in the Geoprocessing messages:
@@ -232,11 +213,6 @@ arcpy.FishboneQA.FishboneQATool(
 - Apply a bold circle marker, red or orange
 - Label with `CivicNumber` and `StreetName` to identify problem records without clicking
 
-### Road_QA_Issues
-- Apply bold red or magenta line symbology
-- Label with `Issue` field to show problem description
-- Review and fix these segments before re-running civic QA
-
 ## Troubleshooting
 
 | Issue | Likely Cause | Fix |
@@ -244,7 +220,7 @@ arcpy.FishboneQA.FishboneQATool(
 | Field dropdowns are empty | Wrong layer type selected or layer not loaded in map | Confirm the layer is loaded in the current map and is the correct geometry type |
 | Tool errors on output GDB | GDB does not exist | Create the file GDB manually before running |
 | All civics returning `OutOfRange` | Street name fields do not match between layers | Check naming conventions and run normalization upstream if needed |
-| Many parity mismatches | Road ranges have incorrect parity patterns | Check `Road_QA_Issues` layer for range problems; update road data |
+| Many parity mismatches | Parity validation may not be appropriate for your addressing system | Consider disabling parity validation if addresses don't follow odd/even sides |
 | All addresses on one side show MISMATCH | Bug in older version | Ensure using latest version with parity-preference matching |
 | Tool errors mid-run on geometry | Null geometries in input layers | Run **Check Geometry** and **Repair Geometry** on both inputs before running |
 | `Fishbone_Lines` is empty | No civic points matched any road segment | Verify correct fields are selected and both layers share the same coordinate system |
@@ -262,9 +238,8 @@ arcpy.FishboneQA.FishboneQATool(
 **v2.0 - Enhanced (Current)**
 - Added parity-preference matching (matches to correct odd/even side first)
 - Added address parity validation fields
-- Added road range quality validation
-- Added `Road_QA_Issues` output layer
 - Enhanced statistics reporting
+- Focused on civic address QA only (road validation moved to separate tool)
 
 **v1.0 - Original**
 - Basic range matching
