@@ -1,4 +1,4 @@
-# Plain Language Guide - Fishbone-QA-911
+# Plain Language Guide - Fishbone-QA-911 Enhanced
 
 ## What Is This Tool For?
 
@@ -50,7 +50,7 @@ Address 145:
 
 So address 145 is numerically within BOTH ranges. Now the tool needs to decide which side is correct.
 
-### 4. Parity-Based Matching (Updated)
+### 4. Parity-Based Matching (NEW - Enhanced Version)
 
 This is where the enhanced version differs from the original. Instead of just picking whichever side is closest, the tool checks the **odd/even pattern**:
 
@@ -143,16 +143,6 @@ This tells you immediately what the odd/even pattern should be on each side.
 ### Fishbone_OutOfRange
 For every civic point flagged `OutOfRange` or `NoData`, the tool copies that point into this separate feature class. These points have no valid road segment to connect to. In ArcGIS Pro you can symbolize these with a bold circle marker to make them stand out.
 
-### Road_QA_Issues (NEW)
-The tool also validates the road segment data itself and creates this layer when problems are found:
-
-**Common issues:**
-- "Left range: From and To addresses are identical" → Range needs updating
-- "Left range parity: Mixed parity range: 100 (EVEN) to 199 (ODD)" → Range should probably be 100-200 or 100-198
-- "Right range: Unusually large range gap: 10000" → Possible data entry error
-
-These issues should be fixed in your road data before re-running the civic QA.
-
 ## How to Read the Map
 
 A healthy street looks like a fish skeleton - the road runs down the middle and short lines branch off it at regular intervals. The lines should be short and roughly consistent in length, and when parity validation is enabled, all lines should show `ParityMatch: MATCH`.
@@ -164,7 +154,6 @@ A healthy street looks like a fish skeleton - the road runs down the middle and 
 - **Points in Fishbone_OutOfRange** - the address number does not exist in any road range, meaning either the civic number is wrong or the road ranges need updating
 - **Clusters of OutOfRange points on one street** - the road ranges for that segment are likely out of date or were never entered correctly
 - **Lines crossing other streets** - the civic point may be matched to the wrong segment, possibly due to a duplicate street name in the database
-- **Features in Road_QA_Issues** - road segment ranges have data quality problems that need fixing
 
 ## Interpreting Parity Results
 
@@ -227,16 +216,7 @@ After making corrections, simply re-run the tool - it cleans up and rebuilds all
    - Or update road ranges if they're incorrect
 5. Re-run tool to verify fixes
 
-### Workflow 2: Fix Road Range Problems
-1. Open `Road_QA_Issues` layer (if created)
-2. Review issues by type:
-   - Identical from/to values → Update ranges
-   - Mixed parity ranges → Adjust endpoints to match odd/even pattern
-   - Unusually large gaps → Verify and correct
-3. Update road segment data
-4. Re-run tool to confirm fixes
-
-### Workflow 3: Update Out-of-Range Addresses
+### Workflow 2: Update Out-of-Range Addresses
 1. Open `Fishbone_OutOfRange` layer
 2. Sort by `StreetName` to group by street
 3. For each street with multiple out-of-range points:
@@ -304,7 +284,7 @@ MATCHING STATISTICS:
 A: Make sure you're using the LATEST version with parity-preference matching. Older versions had this bug.
 
 **Q: I see Road_QA_Issues with "mixed parity" warnings**
-A: Your road ranges may need updating. A range of 100-199 contains both even (100) and odd (199). Consider changing to 100-200 (all even) or adjusting the endpoint.
+A: This tool no longer creates Road_QA_Issues - road validation has been moved to a separate tool. Use the dedicated road range validation tool to check for parity and range issues.
 
 **Q: ParityMatch shows MATCH but the fishbone line is very long**
 A: The parity is correct, but the point may still be geometrically displaced. Check if it should be moved closer to the road or if it's a legitimate rear address.
@@ -314,9 +294,8 @@ A: The parity is correct, but the point may still be geometrically displaced. Ch
 **v2.0 - Enhanced (Current)**
 - Added parity-preference matching (matches to correct odd/even side first)
 - Added address parity validation
-- Added road range quality validation
-- Added Road_QA_Issues output layer
 - Enhanced statistics and reporting
+- Focused on civic address QA only
 
 **v1.0 - Original**
 - Basic range matching
