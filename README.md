@@ -77,10 +77,6 @@ A standalone notebook version (`Fishbone_Notebook.ipynb`) is included for direct
 5. Results are written to a copy of the civic layer - the original is never touched
 6. Fishbone lines and OutOfRange points are generated as separate outputs
 
-For a full explanation of the concept and methodology see the [Plain Language Guide](docs/plain_language_guide.md).
-For technical implementation details see the [Technical Reference](docs/technical_reference.md).
-For toolbox parameter and deployment details see the [Toolbox Reference](docs/toolbox_reference.md).
-
 ## Symbology Tips
 - Symbolize `Fishbone_Lines` with a **green line** for clean at-a-glance QA
 - Symbolize `Fishbone_OutOfRange` with a **bold red circle marker** to make problem addresses stand out
@@ -92,13 +88,13 @@ For toolbox parameter and deployment details see the [Toolbox Reference](docs/to
 - Output target must be a file geodatabase - enterprise geodatabases are not currently supported.
 
 ## Documentation
-Full documentation is available in the [`docs/`](docs/) folder:
+Full documentation is available in the Wiki Section:
 
 | Document | Description |
 |---|---|
-| [Plain Language Guide](docs/plain_language_guide.md) | Concept, methodology, and how to read the outputs - written for all skill levels |
-| [Technical Reference](docs/technical_reference.md) | Architecture, algorithm, cursor strategy, and performance characteristics |
-| [Toolbox Reference](docs/toolbox_reference.md) | Parameters, validation, deployment, and troubleshooting for the `.pyt` tool |
+| [Overview Guide](https://github.com/A-Charvin/Fishbone-QA-911/wiki) | Concept, methodology, and how to read the outputs - written for all skill levels |
+| [Technical Reference](https://github.com/A-Charvin/Fishbone-QA-911/wiki/Technical-Reference) | Architecture, algorithm, cursor strategy, and performance characteristics |
+| [Toolbox Reference](https://github.com/A-Charvin/Fishbone-QA-911/wiki/Toolbox-Reference) | Parameters, validation, deployment, and troubleshooting for the `.pyt` tool |
 
 ## Contributing
 Contributions are welcome. If you work in 911 GIS or municipal addressing and have suggestions for improving the matching logic, adding odd/even parity checks, or supporting enterprise geodatabases, feel free to open an issue or submit a pull request.
