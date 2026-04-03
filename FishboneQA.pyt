@@ -192,7 +192,7 @@ class FishboneQATool:
         # Build road lookup dictionary
         # ------------------------------------------------------------------
         messages.addMessage("Building road lookup dictionary...")
-        road_fields = ["OBJECTID", road_name_fld, fL_fld, tL_fld, fR_fld, tR_fld, "SHAPE@"]
+        road_fields = ["OID@", road_name_fld, fL_fld, tL_fld, fR_fld, tR_fld, "SHAPE@"]
         road_lookup = {}
         road_detail_lookup = {}
 
@@ -227,7 +227,7 @@ class FishboneQATool:
         # Matching loop - operates on the COPY
         # ------------------------------------------------------------------
         messages.addMessage("Matching civic points to road segments...")
-        civic_fields = ["OBJECTID", civic_name_fld, civic_num_fld, "MatchedSegmentOID", "RangeStatus", "SHAPE@"]
+        civic_fields = ["OID@", civic_name_fld, civic_num_fld, "MatchedSegmentOID", "RangeStatus", "SHAPE@"]
 
         with arcpy.da.UpdateCursor(civic_result, civic_fields) as cur:
             for row in cur:
@@ -320,7 +320,7 @@ class FishboneQATool:
         # Pass 1 - Fishbone lines
         # ------------------------------------------------------------------
         messages.addMessage("Drawing fishbone lines...")
-        result_fields = ["OBJECTID", civic_name_fld, civic_num_fld, "SHAPE@", "MatchedSegmentOID", "RangeStatus"]
+        result_fields = ["OID@", civic_name_fld, civic_num_fld, "SHAPE@", "MatchedSegmentOID", "RangeStatus"]
         line_fields   = ["SHAPE@", "CivicOID", "RoadOID", "RangeStatus", "RoadName", "CivicNumber", "MatchedRange"]
 
         with arcpy.da.SearchCursor(civic_result, result_fields) as civic_cur, \
