@@ -282,7 +282,7 @@ class FishboneQATool:
         # ------------------------------------------------------------------
         messages.addMessage("Building road lookup dictionary and validating road ranges...")
         
-        road_fields = ["OBJECTID", road_name_fld, fL_fld, tL_fld, fR_fld, tR_fld, "SHAPE@"]
+        road_fields = ["OID@", road_name_fld, fL_fld, tL_fld, fR_fld, tR_fld, "SHAPE@"]
         
         road_lookup = {}
         road_detail_lookup = {}
@@ -328,7 +328,7 @@ class FishboneQATool:
         # ------------------------------------------------------------------
         messages.addMessage("Matching civic points to road segments...")
         
-        civic_fields = ["OBJECTID", civic_name_fld, civic_num_fld]
+        civic_fields = ["OID@", civic_name_fld, civic_num_fld]
         civic_fields.extend(["MatchedSegmentOID", "RangeStatus", "MatchedSide"])
         
         if enable_parity_check:
@@ -561,7 +561,7 @@ class FishboneQATool:
         # ------------------------------------------------------------------
         messages.addMessage("Drawing fishbone lines...")
         
-        result_fields = ["OBJECTID", civic_name_fld, civic_num_fld, "SHAPE@", 
+        result_fields = ["OID@", civic_name_fld, civic_num_fld, "SHAPE@", 
                         "MatchedSegmentOID", "RangeStatus", "MatchedSide"]
         
         if enable_parity_check:
